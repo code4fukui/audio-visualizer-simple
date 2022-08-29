@@ -311,6 +311,7 @@ const init = async () => {
     }
   };
   mute.onclick = voiceMute;
+  voiceMute();
 };
 
 const heading = document.querySelector("h1");
