@@ -22,9 +22,17 @@
       <h1>Voice-change-O-matic</h1>
     </header>
 
-    <canvas class="visualizer" width="640" height="100"></canvas> 
+    <canvas class="visualizer" width="1000" height="400"></canvas> 
 
     <form class="controls">
+      <div>
+        <label for="visual">Visualizer setting</label>
+        <select id="visual" name="visual">
+          <option value="sinewave">Sinewave</option>
+          <option value="frequencybars" selected>Frequency bars</option>
+          <option value="off">Off</option>
+        </select>
+      </div>
       <div>
         <label for="voice">Voice setting</label>
         <select id="voice" name="voice">
@@ -35,11 +43,13 @@
         </select>
       </div>
       <div>
-        <label for="visual">Visualizer setting</label>
-        <select id="visual" name="visual">
-          <option value="sinewave">Sinewave</option>
-          <option value="frequencybars" selected>Frequency bars</option>
-          <option value="off">Off</option>
+        <label for="voice">Audio Input setting</label>
+        <select id="audioin">
+        </select>
+      </div>
+      <div>
+        <label for="voice">Audio Output setting</label>
+        <select id="audioout">
         </select>
       </div>
       <div>
@@ -76,7 +86,7 @@
 
     <!-- Below is your custom application script -->
 
-    <script src="scripts/app.js"></script>
+    <script type="module" src="scripts/app.js"></script>
 	
 </body>
 </html>
