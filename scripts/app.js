@@ -48,15 +48,6 @@ const init = async () => {
 
   const mute = document.querySelector(".mute");
 
-  //set up the different audio nodes we will use for the app
-
-  const analyser = audioCtx.createAnalyser();
-  analyser.minDecibels = -90;
-  analyser.maxDecibels = -10;
-  analyser.smoothingTimeConstant = 0.85;
-
-  const gainNode = audioCtx.createGain();
-
   // distortion curve for the waveshaper, thanks to Kevin Ennis
   // http://stackoverflow.com/questions/22312841/waveshaper-node-in-webaudio-how-to-emulate-distortion
 
@@ -123,7 +114,17 @@ const init = async () => {
   console.log(stream);
   let source = audioCtx.createMediaStreamSource(stream);
 
+  const gainNode = audioCtx.createGain();
   source.connect(gainNode);
+
+  const analyser = audioCtx.createAnalyser();
+  analyser.minDecibels = -90;
+  analyser.maxDecibels = -10;
+  analyser.smoothingTimeConstant = 0.85;
+  gainNode.connect(analyser);
+
+  analyser.connect(audioCtx.destination);
+
   /*
   const distortion = audioCtx.createWaveShaper();
   const biquadFilter = audioCtx.createBiquadFilter();
@@ -133,7 +134,6 @@ const init = async () => {
   biquadFilter.connect(gainNode);
   convolver.connect(gainNode);
   */
-  gainNode.connect(analyser);
 
   await addOptions();
   audioin.onchange = async () => {
@@ -158,8 +158,6 @@ const init = async () => {
   */
   //const deviceId = "dbfdc86597cb327a9a08c61cc465e0cc009b539b775d0fe9bc66d570a33b6181"; // speaker
   //const deviceId = "af959fb1506f0b34ccb81b45dde8d29a1ffa89e6f29184f4dc32e3504801edb0"; // teams
-  analyser.connect(audioCtx.destination);
-
   
   const visualize = () => {
     const WIDTH = canvas.width;
@@ -297,21 +295,27 @@ const init = async () => {
   voiceChange();
   */
 
+  rangegain.onchange = () => {
+    gainNode.gain.value = rangegain.value;
+  };
+
   const voiceMute = () => {
     if (mute.id === "") {
       //gainNode.gain.value = 0;
+      //gainNode.disconnect();
       analyser.disconnect();
       mute.id = "activated";
       mute.innerHTML = "Unmute";
     } else {
       //gainNode.gain.value = 1;
+      //gainNode.connect(audioCtx.destination);
       analyser.connect(audioCtx.destination);
       mute.id = "";
       mute.innerHTML = "Mute";
     }
   };
   mute.onclick = voiceMute;
-  voiceMute();
+  //voiceMute();
 };
 
 const heading = document.querySelector("h1");

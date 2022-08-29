@@ -63,9 +63,10 @@ canvas {
   padding-top: 1rem;
 }
 
-.controls label, .controls select {
+.controls label, .controls select, .controls input {
   display: block;
   margin: 0 auto;
+  width: 80%;
 }
 
 .controls label {
