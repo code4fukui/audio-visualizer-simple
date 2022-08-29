@@ -4,32 +4,37 @@ const getDevices = async (kind) => {
 };
 const getAudioInput = async () => getDevices("audioinput");
 const getAudioOutput = async () => getDevices("audiooutput");
-const ains = await getAudioInput();
-const aouts = await getAudioOutput();
-//const aouts = await navigator.mediaDevices.selectAudioOutput(); // not yet
-console.log(ains, aouts);
 
-for (const a of ains) {
-  const opt = document.createElement("option");
-  opt.value = a.deviceId;
-  opt.textContent = a.label;
-  audioin.appendChild(opt);
-}
-for (const a of aouts) {
-  const opt = document.createElement("option");
-  opt.value = a.deviceId;
-  opt.textContent = a.label;
-  audioout.appendChild(opt);
-}
-audioout.onchange = async () => {
-  const deviceId = audioout.value;
-  const eleaudio = document.createElement("audio");
-  await eleaudio.setSinkId(deviceId);
-  console.log("audiooutput: " + deviceId);
+const addOptions = async () => {
+  const ains = await getAudioInput();
+  const aouts = await getAudioOutput();
+  //const aouts = await navigator.mediaDevices.selectAudioOutput(); // not yet
+  console.log(ains, aouts);
+
+  for (const a of ains) {
+    const opt = document.createElement("option");
+    opt.value = a.deviceId;
+    opt.textContent = a.label;
+    audioin.appendChild(opt);
+  }
+  /*
+  for (const a of aouts) {
+    const opt = document.createElement("option");
+    opt.value = a.deviceId;
+    opt.textContent = a.label;
+    audioout.appendChild(opt);
+  }
+  audioout.onchange = async () => {
+    const deviceId = audioout.value;
+    const eleaudio = document.createElement("audio");
+    await eleaudio.setSinkId(deviceId);
+    console.log("audiooutput: " + deviceId);
+  };
+  */
 };
 
 const init = async () => {
-  heading.textContent = "Voice-change-O-matic";
+  heading.textContent = document.title;
   document.body.removeEventListener("click", init)
 
   // set up forked web audio context, for multiple browsers
@@ -50,10 +55,7 @@ const init = async () => {
   analyser.maxDecibels = -10;
   analyser.smoothingTimeConstant = 0.85;
 
-  const distortion = audioCtx.createWaveShaper();
   const gainNode = audioCtx.createGain();
-  const biquadFilter = audioCtx.createBiquadFilter();
-  const convolver = audioCtx.createConvolver();
 
   // distortion curve for the waveshaper, thanks to Kevin Ennis
   // http://stackoverflow.com/questions/22312841/waveshaper-node-in-webaudio-how-to-emulate-distortion
@@ -120,12 +122,20 @@ const init = async () => {
   const stream = await navigator.mediaDevices.getUserMedia(constraints);
   console.log(stream);
   let source = audioCtx.createMediaStreamSource(stream);
+
+  source.connect(gainNode);
+  /*
+  const distortion = audioCtx.createWaveShaper();
+  const biquadFilter = audioCtx.createBiquadFilter();
+  const convolver = audioCtx.createConvolver();
   source.connect(distortion);
   distortion.connect(biquadFilter);
   biquadFilter.connect(gainNode);
   convolver.connect(gainNode);
+  */
   gainNode.connect(analyser);
 
+  await addOptions();
   audioin.onchange = async () => {
     const deviceId = audioin.value;
     const constraints = { audio: { deviceId } };
@@ -133,7 +143,8 @@ const init = async () => {
     console.log(stream);
     source.disconnect();
     source = audioCtx.createMediaStreamSource(stream);
-    source.connect(distortion);
+    //source.connect(distortion);
+    source.connect(gainNode);
   };
 
   //analyser.connect(audioCtx.destination);
@@ -237,14 +248,13 @@ const init = async () => {
 
     } else if (visualSetting == "off") {
       canvasCtx.clearRect(0, 0, WIDTH, HEIGHT);
-      canvasCtx.fillStyle = "red";
+      canvasCtx.fillStyle = "black";
       canvasCtx.fillRect(0, 0, WIDTH, HEIGHT);
     }
 
   };
 
   const voiceChange = () => {
-
     distortion.oversample = "4x";
     biquadFilter.gain.setTargetAtTime(0, audioCtx.currentTime, 0)
 
@@ -272,7 +282,6 @@ const init = async () => {
   };
 
   visualize();
-  voiceChange();
 
   // event listeners to change visualize and voice settings
 
@@ -281,9 +290,12 @@ const init = async () => {
     visualize();
   };
 
+  /*
   voiceSelect.onchange = () => {
     voiceChange();
   };
+  voiceChange();
+  */
 
   const voiceMute = () => {
     if (mute.id === "") {
